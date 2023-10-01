@@ -19,7 +19,6 @@ async function main() {
     console.log(err);
   }
 }
-
 main();
 
 const port = process.env.PORT || 3000;
