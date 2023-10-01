@@ -13,8 +13,8 @@ const DB = process.env.DATABASE.replace(
 
 async function main() {
   try {
-    const con = await mongoose.connect(DB);
-    console.log(con.connections)
+    await mongoose.connect(DB);
+    console.log('Database connected...')
   } catch (err) {
     console.log(err);
   }
