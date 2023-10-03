@@ -15,7 +15,15 @@ const getAllTours = async (req, res) => {
     } else {
       queryStr.sort = '-createdAt';
     }
-    const tours = await Tour.find(queryStr).sort(queryStr.sort);
+
+    // Projecting of Field Limiting
+    if (queryStr.fields) {
+      queryStr.fields = queryStr.fields.split(',').join(' ');
+    }
+
+    const tours = await Tour.find(queryStr)
+      .select(queryStr.fields)
+      .sort(queryStr.sort);
     res.status(200).json({
       status: 'success',
       results: tours.length,
