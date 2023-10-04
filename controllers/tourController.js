@@ -1,5 +1,12 @@
 const Tour = require('../models/tourModel');
 
+const aliasTopTours = async (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+  next();
+};
+
 const getAllTours = async (req, res) => {
   try {
     let queryStr = JSON.stringify(req.query);
@@ -13,7 +20,7 @@ const getAllTours = async (req, res) => {
     if (queryStr.sort) {
       queryStr.sort = queryStr.sort.split(',').join(' ');
     } else {
-      queryStr.sort = '-createdAt';
+      queryStr.sort = '-createdAt _id';
     }
 
     // Projecting of Field Limiting
@@ -21,9 +28,22 @@ const getAllTours = async (req, res) => {
       queryStr.fields = queryStr.fields.split(',').join(' ');
     }
 
+    // Pagination and Limit
+    const page = +queryStr.page || 1;
+    const limit = +queryStr.limit || 100;
+    const skip = (page - 1) * limit;
+    if (queryStr.page) {
+      const numTours = await Tour.countDocuments();
+      if (skip >= numTours) {
+        throw new Error('This page does not exist');
+      }
+    }
+
     const tours = await Tour.find(queryStr)
       .select(queryStr.fields)
-      .sort(queryStr.sort);
+      .sort(queryStr.sort)
+      .skip(skip)
+      .limit(limit);
     res.status(200).json({
       status: 'success',
       results: tours.length,
@@ -114,4 +134,5 @@ module.exports = {
   createTour,
   getTour,
   getAllTours,
+  aliasTopTours,
 };
